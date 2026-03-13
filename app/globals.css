@@ -3,26 +3,12 @@
 @tailwind utilities;
 
 html { scroll-behavior: smooth; }
-body { 
-  overflow-x: hidden; 
-  background-color: #1A1A1A;
-  color: #FFFFFF;
-  font-family: var(--font-body);
-}
-
-h1, h2, h3, h4 { font-family: var(--font-heading); }
+body { overflow-x: hidden; background: #1A1A1A; color: #FFFFFF; font-family: var(--font-body); }
+h1,h2,h3,h4 { font-family: var(--font-heading); }
 
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 @keyframes slideUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
-@keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
-@keyframes scaleIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-@keyframes slideLeft { from { transform: translateX(0); } to { transform: translateX(-50%); } }
-
+@keyframes pulse-glow { 0%,100% { box-shadow: 0 0 20px #C0C0C0; } 50% { box-shadow: 0 0 40px #C0C0C0; } }
+.animate-fadeIn { animation: fadeIn 0.8s ease-out forwards; }
+.animate-slideUp { animation: slideUp 0.8s ease-out forwards; }
 .animate-glow { animation: pulse-glow 2s ease-in-out infinite; }
-@keyframes pulse-glow { 0%, 100% { box-shadow: 0 0 10px rgba(192, 192, 192, 0.2); } 50% { box-shadow: 0 0 30px rgba(192, 192, 192, 0.5); } }
-
-.glass {
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(10px);
-  border: 1px border-white/10;
-}
