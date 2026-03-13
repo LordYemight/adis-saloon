@@ -1,22 +1,20 @@
-import type { ReactNode } from 'react';
-import Head from 'next/head';
-import Navbar from './Navbar';
-import Footer from './Footer';
+import { Playfair_Display, DM_Sans } from 'next/font/google';
+import './globals.css';
 
-interface LayoutProps {
-  children: ReactNode;
-}
+const heading = Playfair_Display({ subsets: ['latin'], variable: '--font-heading' });
+const body = DM_Sans({ subsets: ['latin'], variable: '--font-body' });
 
-export default function Layout({ children }: LayoutProps) {
+export const metadata = {
+  title: 'Adis Saloon | Experience the Art of Hair',
+  description: 'Lagos\' premier unisex salon and styling boutique.',
+};
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <>
-      <Head>
-        <title>Adis Saloon</title>
-        <meta name="description" content="The Art of Hair" />
-      </Head>
-      <Navbar />
-      <main className="py-20">{children}</main>
-      <Footer />
-    </>
+    <html lang="en">
+      <body className={`${heading.variable} ${body.variable} font-sans antialiased`}>
+        {children}
+      </body>
+    </html>
   );
 }
