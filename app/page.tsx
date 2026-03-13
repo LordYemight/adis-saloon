@@ -4,44 +4,97 @@ import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { 
   Scissors, 
+  Sparkles, 
   Star, 
-  MapPin, 
-  Phone, 
-  Mail, 
-  Instagram, 
+  ShieldCheck, 
   ArrowRight, 
   Menu, 
   X, 
-  CheckCircle2, 
-  Sparkles, 
-  Zap, 
-  ShieldCheck,
-  ImageOff,
-  Clock,
-  User
+  Phone, 
+  Mail, 
+  MapPin, 
+  Instagram, 
+  MessageSquare,
+  ChevronRight,
+  Quote,
+  CheckCircle2,
+  ImageOff
 } from 'lucide-react';
+
+// --- Types ---
+interface Product {
+  name: string;
+  description: string;
+  price: string;
+  image_url: string;
+}
+
+interface Stat {
+  number: string;
+  label: string;
+  icon: string;
+}
+
+// --- Constants ---
+const BRAND = {
+  name: "Adis Saloon",
+  tagline: "Define Your Style.",
+  description: "Experience luxury grooming where precision meets passion. Adis Saloon sets the new standard for unisex hair artistry in Lagos.",
+  industry: "beauty",
+  currency: "₦",
+  region: "Nigeria"
+};
+
+const CONTACT = {
+  whatsapp: "+234 801 234 5678",
+  instagram: "https://instagram.com/adis_saloon",
+  email: "booking@adissaloon.ng",
+  address: "14 Platinum Way, Victoria Island, Lagos, Nigeria"
+};
+
+const IMAGES = {
+  hero: "https://images.unsplash.com/photo-1664549761426-6a1cb1032854?auto=format&fit=crop&w=1920&q=80",
+  about: "https://images.unsplash.com/photo-1686737358171-e6d8ff1e83b7?auto=format&fit=crop&w=1080&q=80",
+  products: [
+    "https://images.unsplash.com/photo-1761317724384-4dbf2d354162?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1520336811552-42878b67d25f?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1629136627594-428799f827e4?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1533808232502-bee53575c3af?auto=format&fit=crop&w=800&q=80"
+  ],
+  gallery: [
+    "https://images.unsplash.com/photo-1629397683830-9805395892e8?auto=format&fit=crop&w=600&q=80",
+    "https://images.unsplash.com/photo-1656600796191-76101980aba5?auto=format&fit=crop&w=600&q=80",
+    "https://images.unsplash.com/photo-1509967419530-da38b4704bc6?auto=format&fit=crop&w=600&q=80",
+    "https://images.unsplash.com/photo-1506618403381-77ae408451b7?auto=format&fit=crop&w=600&q=80",
+    "https://images.unsplash.com/photo-1648249979033-05b45fad65cf?auto=format&fit=crop&w=600&q=80",
+    "https://images.unsplash.com/photo-1616529484745-85f885b9889a?auto=format&fit=crop&w=600&q=80",
+    "https://images.unsplash.com/photo-1654403868650-b67027f3627f?auto=format&fit=crop&w=600&q=80",
+    "https://images.unsplash.com/photo-1520338661084-680395057c93?auto=format&fit=crop&w=600&q=80",
+    "https://images.unsplash.com/photo-1713771295889-eacfced8de80?auto=format&fit=crop&w=600&q=80"
+  ]
+};
+
+const PRODUCTS: Product[] = [
+  { name: "The Signature Cut & Style", description: "Precision cut tailored to your facial structure, finished with premium styling.", price: "₦15,000", image_url: IMAGES.products[0] },
+  { name: "Luxury Color Transformation", description: "Full head balayage or vivid color session with deep conditioning treatment.", price: "₦45,000", image_url: IMAGES.products[1] },
+  { name: "Deep Repair Mask", description: "Intensive protein and moisture therapy to restore shine to damaged hair.", price: "₦12,500", image_url: IMAGES.products[2] },
+  { name: "Gentleman's Royal Shave", description: "Hot towel service, straight razor shave, and facial massage ritual.", price: "₦10,000", image_url: IMAGES.products[3] }
+];
+
+const TESTIMONIALS = [
+  { name: "Tunde Williams", role: "Creative Director", text: "The most precise fade I've ever received in Lagos. The attention to detail is unmatched." },
+  { name: "Amaka Okafor", role: "Model", text: "They completely transformed my hair health. Their color work is truly international standard." },
+  { name: "Femi Adebayo", role: "Entrepreneur", text: "Premium vibes from the moment you walk in. Adis is my only choice for grooming." },
+  { name: "Zainab Yusuf", role: "Stylist", text: "Clean lines and master craftsmanship. The consultation alone is worth the visit." }
+];
 
 // --- Components ---
 
-const useScrollReveal = () => {
-  const ref = useRef<HTMLElement>(null);
-  const [isVisible, setIsVisible] = useState(false);
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) setIsVisible(true); },
-      { threshold: 0.15 }
-    );
-    if (ref.current) observer.observe(ref.current);
-    return () => observer.disconnect();
-  }, []);
-  return { ref, isVisible };
-};
-
-const SafeImage = ({ src, alt, fill, width, height, className, priority }: any) => {
+function SafeImage({ src, alt, fill, width, height, className, priority }: any) {
   const [error, setError] = useState(false);
-  if (error || !src) {
+  if (error) {
     return (
-      <div className={`flex items-center justify-center bg-gradient-to-br from-primary via-primary/80 to-accent/20 ${className}`}>
+      <div className={`flex items-center justify-center bg-gradient-to-br from-primary to-accent/20 ${className}`}>
         <ImageOff size={32} className="text-white/20" />
       </div>
     );
@@ -51,189 +104,179 @@ const SafeImage = ({ src, alt, fill, width, height, className, priority }: any) 
       src={src}
       alt={alt}
       fill={fill}
-      width={!fill ? width : undefined}
-      height={!fill ? height : undefined}
+      width={!fill ? (width ?? 800) : undefined}
+      height={!fill ? (height ?? 600) : undefined}
       className={className}
       priority={priority}
       onError={() => setError(true)}
     />
   );
+}
+
+const useScrollReveal = () => {
+  const ref = useRef<any>(null);
+  const [isVisible, setIsVisible] = useState(false);
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) setIsVisible(true); },
+      { threshold: 0.1 }
+    );
+    if (ref.current) observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, []);
+  return { ref, isVisible };
 };
 
-// --- Data ---
-
-const BRAND = {
-  name: "Adis Saloon",
-  tagline: "Experience the Art of Hair",
-  description: "Lagos' premier unisex salon and styling boutique, offering premium services in a sophisticated, high-end atmosphere.",
-  industry: "Premium Unisex Salon & Stylistry",
-  region: "Lagos, Nigeria",
-  currency: "₦"
+const useTypewriter = (text: string, speed = 80) => {
+  const [display, setDisplay] = useState('');
+  useEffect(() => {
+    let i = 0;
+    const timer = setInterval(() => {
+      if (i < text.length) { setDisplay(prev => prev + text.charAt(i)); i++; }
+      else clearInterval(timer);
+    }, speed);
+    return () => clearInterval(timer);
+  }, [text, speed]);
+  return display;
 };
 
-const PRODUCTS = [
-  { name: "Haircut", desc: "Expertly crafted haircut services for both men and women.", price: "₦1,500", icon: Scissors },
-  { name: "Hair Coloring", desc: "Experience the best in hair coloring services, from subtle highlights to bold, vibrant colors.", price: "₦2,000", icon: Sparkles },
-  { name: "Men's Barbering", desc: "Premium men's barbering services, including haircuts, shaves, and beard styling.", price: "₦1,800", icon: Zap },
-  { name: "Women's Styling", desc: "Expert women's styling services, including haircuts, color, and treatments.", price: "₦2,200", icon: Star },
-  { name: "Treatments", desc: "Relax and rejuvenate with our premium hair and scalp treatments.", price: "₦1,000", icon: ShieldCheck }
-];
-
-const FEATURES = [
-  { title: "Expert Stylists", desc: "Our team of expert stylists are dedicated to delivering the highest level of service and quality.", icon: User },
-  { title: "Premium Products", desc: "We only use the highest quality hair products, ensuring the best results for our clients.", icon: Sparkles },
-  { title: "Clean Environment", desc: "Our salon is designed to provide a clean, comfortable, and relaxing environment.", icon: ShieldCheck }
-];
-
-const TESTIMONIALS = [
-  { name: "John Doe", text: "Adis Saloon is the best salon in Lagos! The attention to detail is unmatched.", role: "Client" },
-  { name: "Jane Doe", text: "I've never felt more confident after a haircut than I do after visiting Adis Saloon!", role: "Client" },
-  { name: "Bob Smith", text: "The stylists at Adis Saloon are truly experts in their craft! High-end vibe all through.", role: "Client" },
-  { name: "Maria Rodriguez", text: "I love the atmosphere at Adis Saloon - so relaxing and welcoming!", role: "Client" }
-];
-
-const CONTACT = {
-  whatsapp: "+234 123 456 789",
-  instagram: "@adis_saloon",
-  email: "hello@adis-salon.com",
-  address: "Lagos, Nigeria"
-};
-
-// --- Page Content ---
+// --- Main Page ---
 
 export default function Page() {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
-  const { ref: heroRef, isVisible: heroVisible } = useScrollReveal();
-  const { ref: servicesRef, isVisible: servicesVisible } = useScrollReveal();
-  const { ref: statsRef, isVisible: statsVisible } = useScrollReveal();
-  const { ref: contactRef, isVisible: contactVisible } = useScrollReveal();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const [formSubmitted, setFormSubmitted] = useState(false);
+  const typedHeadline = useTypewriter(BRAND.tagline);
 
-  const handleForm = (e: React.FormEvent) => {
-    e.preventDefault();
-    setSubmitted(true);
-  };
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 50);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const navLinks = [
+    { name: "Home", href: "#home" },
+    { name: "Services", href: "#services" },
+    { name: "Gallery", href: "#gallery" },
+    { name: "About", href: "#about" },
+    { name: "Contact", href: "#contact" }
+  ];
 
   return (
-    <main className="bg-primary text-white overflow-x-hidden">
-      {/* Navigation */}
-      <nav className="fixed w-full z-50 px-6 py-6 transition-all duration-300 bg-primary/80 backdrop-blur-md border-b border-white/5">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <a href="#home" className="flex items-center gap-2">
-            <div className="w-10 h-10 rounded-lg bg-accent flex items-center justify-center">
-              <span className="text-primary font-black text-xl leading-none">A</span>
-            </div>
-            <span className="font-heading font-black text-white text-xl tracking-tight uppercase">
-              Adis Saloon
-            </span>
+    <main className="relative bg-primary text-secondary selection:bg-accent selection:text-primary">
+      
+      {/* Navbar */}
+      <nav className={`fixed top-0 w-full z-50 transition-all duration-500 ${scrolled ? 'bg-primary/90 backdrop-blur-xl border-b border-white/5 py-4' : 'bg-transparent py-8'}`}>
+        <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
+          <a href="#home" className="flex items-center gap-3 group">
+            <span className="font-heading text-3xl font-black text-accent tracking-tighter">AS</span>
+            <span className="text-white text-sm font-mono tracking-[0.3em] uppercase hidden sm:block group-hover:text-accent transition-colors">ADIS SALOON</span>
           </a>
 
-          {/* Desktop Links */}
-          <div className="hidden md:flex items-center gap-8">
-            <a href="#services" className="text-sm font-medium hover:text-accent transition">Services</a>
-            <a href="#gallery" className="text-sm font-medium hover:text-accent transition">Gallery</a>
-            <a href="#testimonials" className="text-sm font-medium hover:text-accent transition">Reviews</a>
-            <a href="#contact" className="bg-accent text-primary px-6 py-2.5 rounded-full font-bold text-sm hover:scale-105 transition-all">
-              Book Fresh Look
-            </a>
+          <div className="hidden md:flex gap-10">
+            {navLinks.map((link) => (
+              <a key={link.name} href={link.href} className="text-sm font-medium tracking-widest uppercase hover:text-accent transition-colors">
+                {link.name}
+              </a>
+            ))}
           </div>
 
-          {/* Mobile Trigger */}
-          <button className="md:hidden text-white" onClick={() => setMenuOpen(true)}>
-            <Menu size={28} />
-          </button>
+          <div className="flex items-center gap-6">
+            <a href="#contact" className="hidden sm:inline-flex items-center gap-2 bg-secondary text-primary px-6 py-2.5 rounded-none font-bold text-xs tracking-[0.2em] uppercase hover:bg-accent transition-all">
+              Book Session <ArrowRight size={14} />
+            </a>
+            <button onClick={() => setIsMenuOpen(true)} className="md:hidden text-white">
+              <Menu size={28} />
+            </button>
+          </div>
         </div>
       </nav>
 
-      {/* Mobile Sidebar */}
-      {menuOpen && (
-        <div className="fixed inset-0 z-[60] flex">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setMenuOpen(false)} />
-          <div className="absolute right-0 top-0 h-full w-[80%] max-w-sm bg-primary p-10 flex flex-col gap-8 shadow-2xl">
-            <button className="self-end text-white" onClick={() => setMenuOpen(false)}>
+      {/* Mobile Menu */}
+      {isMenuOpen && (
+        <div className="fixed inset-0 z-[100] animate-fadeIn">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-md" onClick={() => setIsMenuOpen(false)} />
+          <div className="absolute right-0 top-0 h-full w-[80%] bg-primary border-l border-white/10 p-10 flex flex-col animate-slideIn">
+            <button onClick={() => setIsMenuOpen(false)} className="self-end mb-16">
               <X size={32} />
             </button>
-            <nav className="flex flex-col gap-6 text-2xl font-heading font-bold">
-              <a href="#services" onClick={() => setMenuOpen(false)}>Services</a>
-              <a href="#gallery" onClick={() => setMenuOpen(false)}>Gallery</a>
-              <a href="#testimonials" onClick={() => setMenuOpen(false)}>Reviews</a>
-              <a href="#contact" onClick={() => setMenuOpen(false)} className="text-accent">Book Now</a>
-            </nav>
+            <div className="flex flex-col gap-8">
+              {navLinks.map((link) => (
+                <a key={link.name} href={link.href} onClick={() => setIsMenuOpen(false)} className="text-4xl font-heading font-light tracking-tight hover:text-accent transition-colors">
+                  {link.name}
+                </a>
+              ))}
+              <a href="#contact" onClick={() => setIsMenuOpen(false)} className="mt-10 bg-accent text-primary p-5 text-center font-bold tracking-widest uppercase">
+                Book Session
+              </a>
+            </div>
           </div>
         </div>
       )}
 
       {/* Hero Section */}
-      <section 
-        id="home"
-        ref={heroRef}
-        className="min-h-screen relative flex items-center justify-center px-6 overflow-hidden pt-20"
-      >
-        <div className="absolute top-1/4 left-1/4 w-[30vw] h-[30vw] bg-accent/10 rounded-full blur-[120px] animate-float" />
-        <div className="absolute bottom-1/4 right-1/4 w-[20vw] h-[20vw] bg-white/5 rounded-full blur-[100px]" />
+      <section id="home" className="min-h-screen flex items-center justify-center bg-primary px-6 relative overflow-hidden">
+        <div className="absolute inset-0 opacity-30">
+          <SafeImage src={IMAGES.hero} alt="Luxury Salon" fill className="object-cover" priority />
+          <div className="absolute inset-0 bg-gradient-to-b from-primary via-primary/80 to-primary" />
+        </div>
         
-        <div className={`relative z-10 text-center max-w-5xl transition-all duration-1000 ${heroVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-          <h1 className="font-heading text-6xl md:text-8xl lg:text-[7rem] font-black text-white leading-[0.9] tracking-tighter uppercase">
-            {BRAND.tagline}
+        <div className="relative z-10 text-center max-w-5xl">
+          <h1 className="font-heading text-7xl md:text-[10vw] font-black text-white leading-[0.85] tracking-tighter">
+            {typedHeadline}<span className="text-accent animate-pulse">|</span>
           </h1>
-          <p className="text-white/60 mt-8 text-lg md:text-2xl max-w-2xl mx-auto leading-relaxed">
+          <p className="text-white/60 mt-8 text-xl md:text-2xl font-light max-w-2xl mx-auto leading-relaxed">
             {BRAND.description}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center mt-12">
-            <a href="#contact" className="bg-accent text-primary px-10 py-5 rounded-full font-black text-lg hover:scale-105 transition-all shadow-xl shadow-accent/10 flex items-center justify-center gap-2">
-              Book Your Fresh Look <ArrowRight size={20} />
+            <a href="#services" className="bg-accent text-primary px-10 py-5 font-black text-sm tracking-[0.2em] uppercase hover:scale-105 transition-all">
+              Explore Services
             </a>
-            <a href="#services" className="border-2 border-white/20 text-white px-10 py-5 rounded-full font-black text-lg hover:bg-white/10 transition-all flex items-center justify-center">
-              View Services
+            <a href="#contact" className="border border-white/20 text-white px-10 py-5 font-black text-sm tracking-[0.2em] uppercase hover:bg-white hover:text-primary transition-all">
+              Book Appointment
             </a>
           </div>
         </div>
       </section>
 
-      {/* Feature Divider */}
-      <div className="py-20 bg-accent/5 border-y border-white/5">
-        <div className="max-w-7xl mx-auto px-6 flex flex-wrap justify-center md:justify-between gap-12">
-          {FEATURES.map((feat, i) => (
-            <div key={i} className="flex items-center gap-4 group">
-              <div className="w-12 h-12 rounded-full border border-accent/30 flex items-center justify-center text-accent group-hover:bg-accent group-hover:text-primary transition-all duration-300">
-                <feat.icon size={24} />
-              </div>
-              <div>
-                <h3 className="font-heading font-bold text-lg">{feat.title}</h3>
-                <p className="text-white/40 text-sm">Lagos Premium Quality</p>
-              </div>
+      {/* Stats / Keyword Divider */}
+      <div className="py-16 border-y border-white/5 bg-primary relative">
+        <div className="max-w-7xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-8">
+          {['Precision', 'Luxury', 'Innovation', 'Mastery'].map((word, i) => (
+            <div key={i} className="flex items-center justify-center gap-4 group">
+              <div className="w-2 h-2 rounded-full bg-accent group-hover:scale-150 transition-transform" />
+              <span className="font-heading text-2xl font-light tracking-widest uppercase opacity-40 group-hover:opacity-100 transition-opacity">{word}</span>
             </div>
           ))}
         </div>
       </div>
 
       {/* Services Grid */}
-      <section 
-        id="services" 
-        ref={servicesRef}
-        className={`py-32 px-6 transition-all duration-1000 ${servicesVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}
-      >
-        <div className="max-w-7xl mx-auto">
-          <div className="mb-20">
-            <h2 className="font-heading text-5xl md:text-7xl font-black uppercase mb-4">Unisex Services</h2>
-            <div className="w-24 h-1.5 bg-accent" />
+      <section id="services" className="py-32 bg-primary">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-20 gap-8">
+            <div className="max-w-2xl">
+              <h2 className="font-heading text-5xl md:text-7xl font-bold mb-6">Unisex Service Menu</h2>
+              <p className="text-white/50 text-xl font-light leading-relaxed">Masterfully executed services for every hair type and style preference.</p>
+            </div>
+            <a href="#contact" className="group flex items-center gap-4 text-accent font-bold tracking-widest uppercase text-sm border-b-2 border-accent/20 pb-2 hover:border-accent transition-all">
+              See Full Menu <ChevronRight className="group-hover:translate-x-2 transition-transform" />
+            </a>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {PRODUCTS.map((prod, idx) => (
-              <div key={idx} className="group p-8 rounded-3xl bg-white/5 border border-white/5 hover:border-accent/40 transition-all duration-500 relative overflow-hidden">
-                <div className="absolute -right-8 -top-8 w-32 h-32 bg-accent/5 rounded-full group-hover:scale-150 transition-transform duration-700" />
-                <div className="relative z-10">
-                  <div className="w-14 h-14 rounded-2xl bg-accent/10 flex items-center justify-center text-accent mb-8">
-                    <prod.icon size={28} />
-                  </div>
-                  <h3 className="font-heading text-3xl font-bold mb-4">{prod.name}</h3>
-                  <p className="text-white/50 mb-8 leading-relaxed line-clamp-3">{prod.desc}</p>
-                  <div className="flex items-center justify-between mt-auto">
-                    <span className="text-2xl font-black text-accent">{prod.price}</span>
-                    <a href="#contact" className="text-sm font-bold flex items-center gap-2 group-hover:gap-3 transition-all">
-                      BOOK NOW <ArrowRight size={16} />
-                    </a>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {PRODUCTS.map((product, idx) => (
+              <div key={idx} className="group relative overflow-hidden bg-white/5 border border-white/10 hover:border-accent/40 transition-all duration-500">
+                <div className="relative h-64 overflow-hidden">
+                  <SafeImage src={product.image_url} alt={product.name} fill className="object-cover grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-700" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-primary/90 to-transparent opacity-60" />
+                </div>
+                <div className="p-8">
+                  <h3 className="font-heading text-2xl font-bold mb-3">{product.name}</h3>
+                  <p className="text-white/40 text-sm mb-6 line-clamp-2 leading-relaxed">{product.description}</p>
+                  <div className="flex items-center justify-between border-t border-white/10 pt-6">
+                    <span className="text-xl font-heading font-bold text-accent">{product.price}</span>
+                    <a href="#contact" className="text-white/50 hover:text-white transition-colors"><Scissors size={20} /></a>
                   </div>
                 </div>
               </div>
@@ -242,196 +285,198 @@ export default function Page() {
         </div>
       </section>
 
-      {/* Stats Divider (A6c) */}
-      <section ref={statsRef} className="bg-accent py-20 overflow-hidden">
-        <div className={`max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-12 px-6 text-center transition-all duration-1000 ${statsVisible ? 'scale-100 opacity-100' : 'scale-75 opacity-0'}`}>
-          <div>
-            <p className="text-5xl font-black text-primary">5k+</p>
-            <p className="text-primary/70 text-sm mt-1 font-bold uppercase tracking-widest">Happy Clients</p>
+      {/* About Section */}
+      <section id="about" className="py-32 relative overflow-hidden">
+        <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-20 items-center">
+          <div className="relative aspect-[4/5] md:aspect-auto md:h-[700px]">
+            <SafeImage src={IMAGES.about} alt="Adis Interior" fill className="object-cover rounded-none grayscale hover:grayscale-0 transition-all duration-1000" />
+            <div className="absolute -bottom-10 -right-10 w-48 h-48 bg-accent/10 backdrop-blur-xl border border-white/10 p-8 flex flex-col justify-center animate-float">
+              <span className="text-4xl font-heading font-bold text-accent">12+</span>
+              <span className="text-xs font-mono uppercase tracking-widest text-white/60">Years of Craft</span>
+            </div>
           </div>
+          
           <div>
-            <p className="text-5xl font-black text-primary">15+</p>
-            <p className="text-primary/70 text-sm mt-1 font-bold uppercase tracking-widest">Stylists</p>
-          </div>
-          <div>
-            <p className="text-5xl font-black text-primary">02</p>
-            <p className="text-primary/70 text-sm mt-1 font-bold uppercase tracking-widest">Locations</p>
-          </div>
-          <div>
-            <p className="text-5xl font-black text-primary">100%</p>
-            <p className="text-primary/70 text-sm mt-1 font-bold uppercase tracking-widest">Satisfaction</p>
+            <span className="text-accent font-mono text-sm tracking-[0.4em] uppercase mb-6 block">The Adis Difference</span>
+            <h2 className="font-heading text-5xl md:text-7xl font-bold mb-10 leading-[0.9]">Where Hair Becomes Architecture.</h2>
+            <p className="text-white/60 text-xl font-light leading-relaxed mb-12">
+              At Adis Saloon, we see hair not just as a service, but as structure. Our minimalist, sophisticated studio provides the perfect backdrop for creating timeless, modern looks that transition seamlessly from the boardroom to the social scene.
+            </p>
+            
+            <div className="space-y-8">
+              {[
+                { title: "Bespoke Consultation", desc: "One-on-one sessions for execution." },
+                { title: "Platinum Certified", desc: "Internationally trained master experts." },
+                { title: "Exclusive Products", desc: "Cruelty-free, high-end imported range." }
+              ].map((item, i) => (
+                <div key={i} className="flex gap-6 items-start group">
+                  <div className="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center shrink-0 group-hover:bg-accent transition-all">
+                    <CheckCircle2 size={20} className="text-accent group-hover:text-primary transition-colors" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-lg mb-1">{item.title}</h4>
+                    <p className="text-white/40 text-sm">{item.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Testimonials Infinite Scroll */}
-      <section id="testimonials" className="py-32 overflow-hidden bg-white/[0.02]">
-        <div className="max-w-7xl mx-auto px-6 mb-16">
-          <h2 className="font-heading text-4xl md:text-6xl font-black uppercase text-center">What Our Clients Say</h2>
+      {/* Testimonials */}
+      <section className="py-32 bg-white/5 overflow-hidden">
+        <div className="max-w-7xl mx-auto px-6 text-center mb-20">
+          <h2 className="font-heading text-5xl font-bold mb-4">Client Transformations</h2>
+          <p className="text-white/40 uppercase tracking-[0.2em] text-xs">Stories from our discerning clientele</p>
         </div>
         
-        <div className="flex w-[200%] gap-6 animate-slide-left hover:[animation-play-state:paused]">
+        <div className="flex w-[200%] gap-8 animate-slide-left hover:[animation-play-state:paused]">
           {[...TESTIMONIALS, ...TESTIMONIALS].map((t, i) => (
-            <div key={i} className="w-80 md:w-[450px] shrink-0 bg-white/5 p-10 rounded-3xl border border-white/10 backdrop-blur-sm">
-              <div className="flex text-accent mb-6 gap-1">
-                {[1,2,3,4,5].map(n => <Star key={n} fill="currentColor" size={16} />)}
+            <div key={i} className="w-[400px] shrink-0 bg-primary p-12 border border-white/5 relative group">
+              <Quote className="absolute top-10 right-10 text-white/5 group-hover:text-accent/10 transition-colors" size={60} />
+              <div className="flex text-accent mb-8">
+                {[1,2,3,4,5].map(n => <Star key={n} size={14} fill="currentColor" />)}
               </div>
-              <p className="text-white/80 text-lg leading-relaxed italic mb-8">"{t.text}"</p>
+              <p className="text-xl font-light italic leading-relaxed mb-10 text-white/80">"{t.text}"</p>
               <div className="flex items-center gap-4">
-                 <div className="w-12 h-12 rounded-full bg-accent/20 flex items-center justify-center text-accent font-bold text-lg border border-accent/30">
-                   {t.name.charAt(0)}
-                 </div>
-                 <div>
-                   <h4 className="font-bold text-white text-md">{t.name}</h4>
-                   <p className="text-accent/60 text-xs uppercase tracking-widest">{t.role}</p>
-                 </div>
+                <div className="w-10 h-10 rounded-full bg-accent/20 flex items-center justify-center font-bold text-accent">
+                  {t.name[0]}
+                </div>
+                <div>
+                  <h4 className="font-bold text-sm tracking-widest uppercase">{t.name}</h4>
+                  <p className="text-white/40 text-xs mt-1">{t.role}</p>
+                </div>
               </div>
             </div>
           ))}
         </div>
       </section>
 
+      {/* Gallery Grid */}
+      <section id="gallery" className="py-32 bg-primary">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="mb-20 text-center">
+            <h2 className="font-heading text-5xl md:text-7xl font-bold mb-6">The Gallery</h2>
+            <p className="text-white/40 tracking-[0.3em] uppercase text-sm">Fresh cuts & artistry</p>
+          </div>
+          
+          <div className="columns-1 sm:columns-2 lg:columns-3 gap-6 space-y-6">
+            {IMAGES.gallery.map((url, i) => (
+              <div key={i} className="relative group overflow-hidden break-inside-avoid">
+                <SafeImage src={url} alt={`Gallery ${i}`} className="w-full grayscale hover:grayscale-0 transition-all duration-700 hover:scale-105" />
+                <div className="absolute inset-0 bg-accent/20 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Contact Section */}
-      <section 
-        id="contact" 
-        ref={contactRef}
-        className={`py-32 px-6 transition-all duration-1000 ${contactVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}
-      >
-        <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-16">
-          <div>
-            <h2 className="font-heading text-5xl md:text-7xl font-black uppercase mb-8">Get in Touch</h2>
-            <p className="text-white/50 text-xl mb-12 max-w-md">Ready for a transformation? Visit us or book a slot through our form. Sharp cuts only.</p>
-            
-            <div className="space-y-8">
-              <div className="flex items-center gap-6 group">
-                <div className="w-14 h-14 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-accent group-hover:text-primary transition-all">
-                  <MapPin size={24} />
+      <section id="contact" className="py-32 bg-primary relative">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="grid lg:grid-cols-2 gap-20">
+            <div>
+              <h2 className="font-heading text-6xl md:text-8xl font-bold mb-10 leading-none">Book Your Appointment</h2>
+              <p className="text-white/50 text-xl font-light mb-16 max-w-md">
+                Secure your session today. Experience the pinnacle of Nigerian hair artistry.
+              </p>
+              
+              <div className="space-y-12">
+                <div className="flex gap-8 group">
+                  <div className="w-14 h-14 rounded-full border border-white/10 flex items-center justify-center text-accent group-hover:bg-accent group-hover:text-primary transition-all">
+                    <MapPin size={24} />
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-mono uppercase tracking-widest text-white/40 mb-2">Location</h4>
+                    <p className="text-lg font-medium">{CONTACT.address}</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-white/40 text-xs uppercase font-bold tracking-widest">Our Studio</p>
-                  <p className="text-xl font-bold">{CONTACT.address}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-6 group">
-                <div className="w-14 h-14 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-accent group-hover:text-primary transition-all">
-                  <Phone size={24} />
-                </div>
-                <div>
-                  <p className="text-white/40 text-xs uppercase font-bold tracking-widest">Call or WhatsApp</p>
-                  <p className="text-xl font-bold">{CONTACT.whatsapp}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-6 group">
-                <div className="w-14 h-14 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-accent group-hover:text-primary transition-all">
-                  <Mail size={24} />
-                </div>
-                <div>
-                  <p className="text-white/40 text-xs uppercase font-bold tracking-widest">Email Us</p>
-                  <p className="text-xl font-bold">{CONTACT.email}</p>
+                
+                <div className="flex gap-8 group">
+                  <div className="w-14 h-14 rounded-full border border-white/10 flex items-center justify-center text-accent group-hover:bg-accent group-hover:text-primary transition-all">
+                    <MessageSquare size={24} />
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-mono uppercase tracking-widest text-white/40 mb-2">Connect</h4>
+                    <p className="text-lg font-medium">{CONTACT.whatsapp}</p>
+                    <p className="text-white/40 text-sm mt-1">{CONTACT.email}</p>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          <div className="bg-white/5 p-8 md:p-12 rounded-[2rem] border border-white/10 relative overflow-hidden">
-            {submitted ? (
-              <div className="h-full flex flex-col items-center justify-center text-center py-20 animate-fadeIn">
-                <div className="w-20 h-20 bg-accent rounded-full flex items-center justify-center text-primary mb-6">
-                  <CheckCircle2 size={40} />
+            <div className="bg-white/5 border border-white/10 p-10 md:p-16 relative">
+              {formSubmitted ? (
+                <div className="h-full flex flex-col items-center justify-center text-center animate-fadeIn py-20">
+                  <div className="w-20 h-20 rounded-full bg-accent/20 flex items-center justify-center text-accent mb-8">
+                    <CheckCircle2 size={40} />
+                  </div>
+                  <h3 className="font-heading text-4xl font-bold mb-4">Request Received</h3>
+                  <p className="text-white/60">Our concierge will contact you shortly to confirm your booking.</p>
+                  <button onClick={() => setFormSubmitted(false)} className="mt-8 text-accent font-bold tracking-widest uppercase text-xs border-b border-accent">Book Another</button>
                 </div>
-                <h3 className="text-3xl font-heading font-bold mb-4">Request Sent!</h3>
-                <p className="text-white/60">We will confirm your booking shortly via WhatsApp.</p>
-                <button 
-                  onClick={() => setSubmitted(false)}
-                  className="mt-8 text-accent font-bold underline"
-                >
-                  Send another request
-                </button>
-              </div>
-            ) : (
-              <form onSubmit={handleForm} className="space-y-6">
-                <div className="grid grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold uppercase tracking-widest text-white/40">Full Name</label>
-                    <input required type="text" className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-4 focus:border-accent outline-none transition" />
+              ) : (
+                <form onSubmit={(e) => { e.preventDefault(); setFormSubmitted(true); }} className="space-y-8">
+                  <div className="grid md:grid-cols-2 gap-8">
+                    <div className="space-y-2">
+                      <label className="text-[10px] uppercase tracking-[0.2em] text-white/40 font-bold">Full Name</label>
+                      <input required type="text" className="w-full bg-transparent border-b border-white/20 py-4 focus:border-accent outline-none transition-colors" placeholder="John Doe" />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[10px] uppercase tracking-[0.2em] text-white/40 font-bold">Phone Number</label>
+                      <input required type="tel" className="w-full bg-transparent border-b border-white/20 py-4 focus:border-accent outline-none transition-colors" placeholder="+234" />
+                    </div>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-xs font-bold uppercase tracking-widest text-white/40">Phone Number</label>
-                    <input required type="tel" className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-4 focus:border-accent outline-none transition" />
+                    <label className="text-[10px] uppercase tracking-[0.2em] text-white/40 font-bold">Service Preferred</label>
+                    <select className="w-full bg-transparent border-b border-white/20 py-4 focus:border-accent outline-none transition-colors appearance-none">
+                      {PRODUCTS.map(p => <option key={p.name} className="bg-primary">{p.name}</option>)}
+                    </select>
                   </div>
-                </div>
-                <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-widest text-white/40">Service</label>
-                  <select className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-4 focus:border-accent outline-none transition text-white">
-                    {PRODUCTS.map(p => <option key={p.name} value={p.name.toLowerCase()} className="bg-primary">{p.name}</option>)}
-                  </select>
-                </div>
-                <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-widest text-white/40">Preferred Time</label>
-                  <div className="relative">
-                    <Clock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30" />
-                    <input type="time" className="w-full bg-white/5 border border-white/10 rounded-xl pl-12 pr-4 py-4 focus:border-accent outline-none transition" />
+                  <div className="space-y-2">
+                    <label className="text-[10px] uppercase tracking-[0.2em] text-white/40 font-bold">Additional Requests</label>
+                    <textarea className="w-full bg-transparent border-b border-white/20 py-4 focus:border-accent outline-none transition-colors h-32 resize-none" placeholder="Tell us about your style vision..."></textarea>
                   </div>
-                </div>
-                <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-widest text-white/40">Message (Optional)</label>
-                  <textarea rows={3} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-4 focus:border-accent outline-none transition" />
-                </div>
-                <button type="submit" className="w-full bg-white text-primary font-black py-5 rounded-xl hover:bg-accent transition-all uppercase tracking-tighter text-lg">
-                  Confirm Booking Slot
-                </button>
-              </form>
-            )}
+                  <button type="submit" className="w-full bg-white text-primary py-6 font-black tracking-[0.3em] uppercase text-sm hover:bg-accent transition-all">
+                    Send Booking Request
+                  </button>
+                </form>
+              )}
+            </div>
           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="bg-black py-20 px-6 border-t border-white/5">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-20">
-            <div className="col-span-1 md:col-span-2">
-              <a href="#home" className="flex items-center gap-2 mb-8">
-                <div className="w-9 h-9 rounded-lg bg-accent flex items-center justify-center">
-                  <span className="text-primary font-black text-lg">A</span>
-                </div>
-                <span className="font-heading font-black text-white text-xl uppercase tracking-widest">
-                  Adis Saloon
-                </span>
-              </a>
-              <p className="text-white/40 max-w-sm leading-relaxed">
-                Experience the art of grooming in the heart of Lagos. Our quality wey go loud ensures you leave feeling like royalty every single time.
-              </p>
+      <footer className="py-20 bg-primary border-t border-white/5">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-12 mb-20">
+            <div className="text-center md:text-left">
+              <a href="#home" className="font-heading text-4xl font-black text-white tracking-tighter">ADIS SALOON</a>
+              <p className="text-white/40 mt-4 max-w-xs font-light">Quality service wey go loud for VI.</p>
             </div>
             
-            <div>
-              <h4 className="font-bold mb-6 uppercase tracking-widest text-xs text-accent">Quick Links</h4>
-              <ul className="space-y-4 text-white/60 text-sm">
-                <li><a href="#services" className="hover:text-white transition">Services</a></li>
-                <li><a href="#gallery" className="hover:text-white transition">Gallery</a></li>
-                <li><a href="#testimonials" className="hover:text-white transition">Reviews</a></li>
-                <li><a href="#contact" className="hover:text-white transition">Booking</a></li>
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="font-bold mb-6 uppercase tracking-widest text-xs text-accent">Social</h4>
-              <div className="flex gap-4">
-                {CONTACT.instagram && (
-                  <a href={`https://instagram.com/${CONTACT.instagram}`} className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center hover:bg-white hover:text-black transition-all">
-                    <Instagram size={18} />
-                  </a>
-                )}
-                <a href={`https://wa.me/${CONTACT.whatsapp.replace(/\+/g, '')}`} className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center hover:bg-white hover:text-black transition-all">
-                  <Phone size={18} />
-                </a>
-              </div>
+            <div className="flex gap-10">
+              <a href={CONTACT.instagram} target="_blank" rel="noopener noreferrer" className="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center hover:bg-accent hover:text-primary transition-all">
+                <Instagram size={20} />
+              </a>
+              <a href={`https://wa.me/${CONTACT.whatsapp.replace(/\s+/g, '')}`} target="_blank" rel="noopener noreferrer" className="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center hover:bg-accent hover:text-primary transition-all">
+                <Phone size={20} />
+              </a>
+              <a href={`mailto:${CONTACT.email}`} className="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center hover:bg-accent hover:text-primary transition-all">
+                <Mail size={20} />
+              </a>
             </div>
           </div>
-
-          <div className="pt-10 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6 text-white/30 text-xs font-bold uppercase tracking-[0.2em]">
-            <p>&copy; {new Date().getFullYear()} Adis Saloon. All Rights Reserved.</p>
-            <p>Lagos, Nigeria</p>
+          
+          <div className="flex flex-col md:flex-row justify-between items-center border-t border-white/5 pt-12 text-[10px] font-mono tracking-widest text-white/30 uppercase text-center gap-6">
+            <p>© {new Date().getFullYear()} Adis Saloon. All Rights Reserved.</p>
+            <div className="flex gap-8">
+              <a href="#" className="hover:text-accent transition-colors">Privacy</a>
+              <a href="#" className="hover:text-accent transition-colors">Terms</a>
+              <a href="#" className="hover:text-accent transition-colors">Credits</a>
+            </div>
           </div>
         </div>
       </footer>
